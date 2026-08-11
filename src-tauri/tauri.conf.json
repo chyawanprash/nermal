@@ -4,7 +4,16 @@
   "version": "0.1.0",
   "identifier": "com.nermal.app",
   "build": {
-    "frontendDist": "../frontend"
+    "beforeDevCommand": {
+      "script": "npm run dev",
+      "cwd": "../frontend"
+    },
+    "beforeBuildCommand": {
+      "script": "npm run build",
+      "cwd": "../frontend"
+    },
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../frontend/dist"
   },
   "app": {
     "windows": [
