@@ -4,7 +4,7 @@ export interface VaultSummary {
   id: string;
   /** Display name, e.g. "Personal". */
   name: string;
-  /** Absolute path to the `.vault` file on disk. */
+  /** Absolute path to the `.nermal` file on disk. */
   path: string;
 }
 

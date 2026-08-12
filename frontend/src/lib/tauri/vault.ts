@@ -10,7 +10,7 @@
  * secret into any of these response shapes.
  */
 import { invoke } from '@tauri-apps/api/core';
-import { open as openDialog } from '@tauri-apps/plugin-dialog';
+import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import type {
   ChangePasswordInput,
   CreateVaultInput,
@@ -19,6 +19,8 @@ import type {
   VaultSummary,
 } from '$lib/types/vault';
 import { toAppError } from './errors';
+
+const NERMAL_EXTENSION = 'nermal';
 
 export const vault = {
   /** `create_vault(directory: string, name: string, password: string) -> VaultInfo` */
@@ -95,12 +97,33 @@ export const vault = {
     return typeof result === 'string' ? result : null;
   },
 
-  /** Native "choose a .vault file to open" dialog. */
+  /** Native "choose a .nermal file to open" dialog. */
   async pickVaultFile(): Promise<string | null> {
     const result = await openDialog({
       directory: false,
       multiple: false,
-      filters: [{ name: 'Vault', extensions: ['vault'] }],
+      filters: [{ name: 'Nermal Vault', extensions: [NERMAL_EXTENSION] }],
+    });
+    return typeof result === 'string' ? result : null;
+  },
+
+  /**
+   * `export_vault(destination: string) -> void` — copies the currently
+   * unlocked vault's encrypted bytes to `destination`. Never decrypts.
+   */
+  async export(destination: string): Promise<void> {
+    try {
+      await invoke('export_vault', { destination });
+    } catch (err) {
+      throw toAppError(err);
+    }
+  },
+
+  /** Native "choose where to save the backup" dialog, defaulting to `<name>.nermal`. */
+  async pickExportDestination(suggestedName: string): Promise<string | null> {
+    const result = await saveDialog({
+      defaultPath: `${suggestedName}.${NERMAL_EXTENSION}`,
+      filters: [{ name: 'Nermal Vault', extensions: [NERMAL_EXTENSION] }],
     });
     return typeof result === 'string' ? result : null;
   },

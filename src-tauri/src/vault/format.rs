@@ -1,4 +1,4 @@
-//! `.vault` file layout: a fixed-size, non-secret header followed by the
+//! `.nermal` file layout: a fixed-size, non-secret header followed by the
 //! AES-256-GCM-encrypted payload (with its authentication tag appended).
 //!
 //! ```text
@@ -6,11 +6,13 @@
 //! CIPHER_ID(1) SALT(32) NONCE(12) || ENCRYPTED PAYLOAD (with GCM tag)
 //! ```
 //!
-//! The header is never secret — only the payload is.
+//! The header is never secret — only the payload is. `MAGIC` identifies the
+//! file as a nermal vault; `version` is independent of it so the on-disk
+//! format can evolve without changing the magic bytes.
 
 use crate::vault::crypto::{KdfParams, NONCE_LEN, SALT_LEN};
 
-pub const MAGIC: &[u8; 7] = b"MYVAULT";
+pub const MAGIC: &[u8; 7] = b"NERMALV";
 pub const CURRENT_VERSION: u8 = 1;
 
 const KDF_ID_ARGON2ID: u8 = 1;

@@ -12,7 +12,7 @@
   <div class="flex flex-col gap-2 p-2.5">
     <button
       type="button"
-      class="flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left text-sm"
+      class="flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[var(--surface-hover)]"
       style="border-color: var(--border-subtle); color: var(--text-tertiary); background: var(--surface-panel)"
       onclick={() => (uiState.searchOpen = true)}
     >
@@ -22,7 +22,7 @@
 
     <button
       type="button"
-      class="flex items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium"
+      class="flex items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-opacity hover:opacity-90 active:opacity-80"
       style="background: var(--color-accent-500); color: var(--text-on-accent)"
       onclick={() => actions.createNote()}
     >

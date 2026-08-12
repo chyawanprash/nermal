@@ -35,6 +35,24 @@
   --color-accent-500: #5c7a67;
   --color-accent-600: #48624f;
 
+  /*
+   * flowbite-svelte components (Button, Input, Toggle, ...) default to a
+   * "primary" color scale. Without this, they fall back to unstyled/no-op
+   * utility classes. Map it onto the app's sage-green accent instead of
+   * flowbite's default blue, so default-colored components match the app.
+   */
+  --color-primary-50: color-mix(in oklab, var(--color-accent-500) 8%, white);
+  --color-primary-100: color-mix(in oklab, var(--color-accent-500) 15%, white);
+  --color-primary-200: color-mix(in oklab, var(--color-accent-500) 30%, white);
+  --color-primary-300: color-mix(in oklab, var(--color-accent-500) 50%, white);
+  --color-primary-400: var(--color-accent-400);
+  --color-primary-500: var(--color-accent-500);
+  --color-primary-600: var(--color-accent-600);
+  --color-primary-700: color-mix(in oklab, var(--color-accent-600) 88%, black);
+  --color-primary-800: color-mix(in oklab, var(--color-accent-600) 72%, black);
+  --color-primary-900: color-mix(in oklab, var(--color-accent-600) 58%, black);
+  --color-primary-950: color-mix(in oklab, var(--color-accent-600) 42%, black);
+
   --color-danger-400: #e08383;
   --color-danger-500: #c85c5c;
   --color-danger-600: #a84545;

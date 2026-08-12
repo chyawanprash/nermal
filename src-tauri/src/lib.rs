@@ -36,6 +36,7 @@ pub fn run() {
             commands::vault::lock_vault,
             commands::vault::close_vault,
             commands::vault::change_vault_password,
+            commands::vault::export_vault,
             commands::notes::list_notes,
             commands::notes::get_note,
             commands::notes::create_note,
