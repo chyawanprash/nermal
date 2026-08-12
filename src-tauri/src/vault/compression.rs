@@ -1,2 +1,1 @@
-//! Zstd compression of the plaintext payload before encryption. Not yet
-//! implemented.
+// Compression is a no-op for v1.
