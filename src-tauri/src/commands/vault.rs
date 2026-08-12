@@ -27,7 +27,7 @@ pub fn create_vault(
     password: String,
     state: State<'_, AppState>,
 ) -> Result<VaultInfo, VaultError> {
-    let path = PathBuf::from(&directory).join(format!("{name}.vault"));
+    let path = PathBuf::from(&directory).join(format!("{name}.nermal"));
 
     if path.exists() {
         return Err(VaultError::SaveFailed(
@@ -174,5 +174,29 @@ pub fn change_vault_password(
     vault.kdf_params = new_kdf_params;
 
     persist(vault)?;
+    Ok(())
+}
+
+/// Export the currently unlocked vault to another location on disk as a
+/// `.nermal` file, for backup/portability.
+///
+/// This never touches plaintext: it flushes any pending in-memory changes
+/// to the vault's own encrypted file first, then copies those encrypted
+/// bytes (header + ciphertext, unchanged) to `destination`. The exported
+/// file is byte-for-byte the same encrypted format and requires the same
+/// password to open.
+#[tauri::command]
+pub fn export_vault(destination: String, state: State<'_, AppState>) -> Result<(), VaultError> {
+    let guard = state.vault.lock().unwrap();
+    let vault = guard.as_ref().ok_or(VaultError::NoVaultOpen)?;
+
+    persist(vault)?;
+
+    let encrypted_bytes =
+        storage::read_vault(&vault.path).map_err(|e| VaultError::SaveFailed(e.to_string()))?;
+
+    storage::write_vault(&PathBuf::from(&destination), &encrypted_bytes)
+        .map_err(|e| VaultError::SaveFailed(e.to_string()))?;
+
     Ok(())
 }

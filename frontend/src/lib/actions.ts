@@ -96,6 +96,25 @@ export const actions = {
     appState.goTo('no-vault');
   },
 
+  /** Export the currently unlocked vault as a `.nermal` backup file. Returns false if cancelled or failed. */
+  async exportVault(): Promise<boolean> {
+    if (!vaultState.current) return false;
+    const destination = await vault.pickExportDestination(vaultState.current.name);
+    if (!destination) return false;
+
+    appState.startLoading('Exporting vault…');
+    try {
+      await this.flushPendingSave();
+      await vault.export(destination);
+      return true;
+    } catch (err) {
+      handle('exportVault', err);
+      return false;
+    } finally {
+      appState.stopLoading();
+    }
+  },
+
   async changePassword(input: ChangePasswordInput): Promise<boolean> {
     appState.startLoading('Changing password…');
     try {
