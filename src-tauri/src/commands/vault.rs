@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use tauri::State;
 
-use super::{persist, VaultError};
+use super::{persist, validate_password_length, VaultError};
 use crate::models::vault::{VaultInfo, VaultPayload, VaultSummary};
 use crate::vault::crypto::{self, CryptoError, KdfParams};
 use crate::vault::format::{self, VaultHeader};
@@ -27,6 +27,8 @@ pub fn create_vault(
     password: String,
     state: State<'_, AppState>,
 ) -> Result<VaultInfo, VaultError> {
+    validate_password_length(&password)?;
+
     let path = PathBuf::from(&directory).join(format!("{name}.nermal"));
 
     if path.exists() {
@@ -156,6 +158,8 @@ pub fn change_vault_password(
     new_password: String,
     state: State<'_, AppState>,
 ) -> Result<(), VaultError> {
+    validate_password_length(&new_password)?;
+
     let mut guard = state.vault.lock().unwrap();
     let vault = guard.as_mut().ok_or(VaultError::NoVaultOpen)?;
 

@@ -3,14 +3,16 @@
   import { uiState } from '$lib/stores/ui.svelte';
   import { appState } from '$lib/stores/app.svelte';
   import { actions } from '$lib/actions';
+  import { checkPassword, isPasswordValid } from '$lib/utils/password';
 
   let currentPassword = $state('');
   let newPassword = $state('');
   let confirmPassword = $state('');
 
+  let passwordCheck = $derived(checkPassword(newPassword));
   let mismatch = $derived(confirmPassword.length > 0 && newPassword !== confirmPassword);
   let canSubmit = $derived(
-    currentPassword.length > 0 && newPassword.length >= 8 && !mismatch,
+    currentPassword.length > 0 && isPasswordValid(newPassword) && !mismatch,
   );
 
   function reset() {
@@ -56,6 +58,11 @@
     <div class="space-y-1.5">
       <Label for="new-password">New password</Label>
       <Input id="new-password" type="password" bind:value={newPassword} placeholder="At least 8 characters" />
+      {#if passwordCheck.status === 'too-short' || passwordCheck.status === 'too-long'}
+        <Helper class="text-xs" color="red">{passwordCheck.message}</Helper>
+      {:else if passwordCheck.status === 'ok'}
+        <Helper class="text-xs" color="green">{passwordCheck.message}</Helper>
+      {/if}
     </div>
 
     <div class="space-y-1.5">

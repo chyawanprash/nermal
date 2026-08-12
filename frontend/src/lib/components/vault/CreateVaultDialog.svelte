@@ -5,6 +5,7 @@
   import { appState } from '$lib/stores/app.svelte';
   import { actions } from '$lib/actions';
   import { vault } from '$lib/tauri/vault';
+  import { checkPassword, isPasswordValid } from '$lib/utils/password';
 
   let directory = $state<string | null>(null);
   let name = $state('');
@@ -12,9 +13,10 @@
   let confirmPassword = $state('');
   let showPassword = $state(false);
 
+  let passwordCheck = $derived(checkPassword(password));
   let mismatch = $derived(confirmPassword.length > 0 && password !== confirmPassword);
   let canSubmit = $derived(
-    Boolean(directory) && name.trim().length > 0 && password.length >= 8 && !mismatch,
+    Boolean(directory) && name.trim().length > 0 && isPasswordValid(password) && !mismatch,
   );
 
   async function pickDirectory() {
@@ -102,6 +104,11 @@
           {#if showPassword}<EyeSlashOutline class="h-4 w-4" />{:else}<EyeOutline class="h-4 w-4" />{/if}
         </button>
       </div>
+      {#if passwordCheck.status === 'too-short' || passwordCheck.status === 'too-long'}
+        <Helper class="text-xs" color="red">{passwordCheck.message}</Helper>
+      {:else if passwordCheck.status === 'ok'}
+        <Helper class="text-xs" color="green">{passwordCheck.message}</Helper>
+      {/if}
     </div>
 
     <div class="space-y-1.5">

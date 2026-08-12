@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SearchOutline, PlusOutline } from 'flowbite-svelte-icons';
+  import { SearchOutline, PlusOutline, CogOutline } from 'flowbite-svelte-icons';
   import { uiState } from '$lib/stores/ui.svelte';
   import { actions } from '$lib/actions';
   import NoteList from './NoteList.svelte';
@@ -33,5 +33,17 @@
 
   <div class="min-h-0 flex-1">
     <NoteList />
+  </div>
+
+  <div class="border-t p-2.5" style="border-color: var(--border-subtle)">
+    <button
+      type="button"
+      class="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[var(--surface-hover)]"
+      style="color: var(--text-secondary)"
+      onclick={() => uiState.openDialog('settings')}
+    >
+      <CogOutline class="h-3.5 w-3.5" />
+      Settings
+    </button>
   </div>
 </aside>

@@ -126,6 +126,21 @@ body {
   border-radius: var(--radius-sm);
 }
 
+/*
+ * Tailwind v4 preflight resets button cursor to `default`, unlike browsers'
+ * native `pointer`. Restore it everywhere buttons/links are actually
+ * clickable, and show `not-allowed` for disabled ones.
+ */
+button:not(:disabled),
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled,
+[role='button'][aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
 ::selection {
   background-color: var(--surface-selected);
 }

@@ -6,6 +6,9 @@ use crate::vault::crypto;
 use crate::vault::format::{self, FormatError, VaultHeader};
 use crate::vault::storage;
 
+pub const MIN_PASSWORD_LENGTH: usize = 8;
+pub const MAX_PASSWORD_LENGTH: usize = 128;
+
 #[derive(Debug, thiserror::Error)]
 pub enum VaultError {
     #[error("vault file not found")]
@@ -20,6 +23,20 @@ pub enum VaultError {
     NoVaultOpen,
     #[error("note not found: {0}")]
     NoteNotFound(String),
+    #[error("password must be at least {MIN_PASSWORD_LENGTH} characters")]
+    PasswordTooShort,
+    #[error("password must be at most {MAX_PASSWORD_LENGTH} characters")]
+    PasswordTooLong,
+}
+
+pub(crate) fn validate_password_length(password: &str) -> Result<(), VaultError> {
+    if password.len() < MIN_PASSWORD_LENGTH {
+        return Err(VaultError::PasswordTooShort);
+    }
+    if password.len() > MAX_PASSWORD_LENGTH {
+        return Err(VaultError::PasswordTooLong);
+    }
+    Ok(())
 }
 
 impl serde::Serialize for VaultError {
