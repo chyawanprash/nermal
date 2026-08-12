@@ -8,3 +8,10 @@ nermalist: a basic encryption based notes app written in tauri and svelte (mainl
 ### Demo For Nerds 
 https://github.com/user-attachments/assets/5d188e8c-948d-4bca-9cce-f2062c18ee06
 
+
+## License
+
+[![GPL v3](https://www.gnu.org/graphics/gplv3-127x51.png)](LICENSE)
+
+
+---
