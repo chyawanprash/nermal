@@ -45,7 +45,10 @@
 
   function run(command: Command) {
     close();
-    command.run();
+    // Let this dialog's exit transition finish before a command opens
+    // another one — opening a new native <dialog> while this one is still
+    // closing makes the new one immediately close too.
+    setTimeout(() => command.run(), 120);
   }
 
   function onkeydown(e: KeyboardEvent) {

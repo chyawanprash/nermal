@@ -28,6 +28,14 @@
   function close() {
     uiState.closeDialog();
   }
+
+  // Switching directly from one open <dialog> to another confuses the
+  // native modal stack (the new one opens and immediately closes) — close
+  // this one and let its exit transition finish before opening the next.
+  function openChangePassword() {
+    uiState.closeDialog();
+    setTimeout(() => uiState.openDialog('change-password'), 120);
+  }
 </script>
 
 <Modal
@@ -117,7 +125,7 @@
       <div class="rounded-lg border" style="border-color: var(--border-subtle)">
         <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 text-sm">
           <span style="color: var(--text-primary)">Change password</span>
-          <Button size="xs" color="alternative" onclick={() => uiState.openDialog('change-password')}>
+          <Button size="xs" color="alternative" onclick={openChangePassword}>
             Change
           </Button>
         </div>

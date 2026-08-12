@@ -1,5 +1,5 @@
 [package]
-name = "nermal"
+name = "nermalist
 version = "0.1.0"
 description = "nermal — a local-first, encrypted notes vault"
 edition = "2021"
@@ -10,7 +10,7 @@ name = "nermal_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [[bin]]
-name = "nermal"
+name = "nermalist
 path = "src/main.rs"
 
 [build-dependencies]
