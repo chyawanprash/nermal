@@ -13,7 +13,7 @@
 use crate::vault::crypto::{KdfParams, NONCE_LEN, SALT_LEN};
 
 pub const MAGIC: &[u8; 7] = b"NERMALV";
-pub const CURRENT_VERSION: u8 = 1;
+pub const CURRENT_VERSION: u8 = 2;
 
 const KDF_ID_ARGON2ID: u8 = 1;
 const CIPHER_ID_AES_256_GCM: u8 = 1;

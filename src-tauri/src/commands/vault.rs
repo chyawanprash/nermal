@@ -46,9 +46,10 @@ pub fn create_vault(
         name: name.clone(),
         notes: vec![],
     };
-    let plaintext =
-        serde_json::to_vec(&payload).map_err(|e| VaultError::SaveFailed(e.to_string()))?;
-    let ciphertext = crypto::encrypt(&*key, &nonce, &plaintext)?;
+    let serialized =
+        bincode::serialize(&payload).map_err(|e| VaultError::SaveFailed(e.to_string()))?;
+    let compressed = vault_compression::compress(&serialized)?;
+    let ciphertext = crypto::encrypt(&*key, &nonce, &compressed)?;
 
     let header = VaultHeader::new(kdf_params, salt, nonce);
     let file_data = format::encode_vault(&header, &ciphertext);
@@ -110,9 +111,11 @@ pub fn unlock_vault(
 
     let key = crypto::derive_key(password.as_bytes(), &header.salt, &header.kdf_params)?;
     let plaintext = crypto::decrypt(&*key, &header.nonce, ciphertext)?;
+    let decompressed =
+        vault_compression::decompress(&plaintext).map_err(|_| CryptoError::DecryptionFailed)?;
 
     let payload: VaultPayload =
-        serde_json::from_slice(&plaintext).map_err(|_| CryptoError::DecryptionFailed)?;
+        bincode::deserialize(&decompressed).map_err(|_| CryptoError::DecryptionFailed)?;
 
     let name = payload.name.clone();
     let note_count = payload.notes.len();

@@ -27,6 +27,8 @@ pub enum VaultError {
     PasswordTooShort,
     #[error("password must be at most {MAX_PASSWORD_LENGTH} characters")]
     PasswordTooLong,
+    #[error("{0}")]
+    Compression(#[from] vault_compression::CompressionError),
 }
 
 pub(crate) fn validate_password_length(password: &str) -> Result<(), VaultError> {
@@ -50,11 +52,12 @@ pub(crate) fn persist(vault: &crate::OpenVault) -> Result<(), VaultError> {
         name: vault.name.clone(),
         notes: vault.notes.clone(),
     };
-    let plaintext =
-        serde_json::to_vec(&payload).map_err(|e| VaultError::SaveFailed(e.to_string()))?;
+    let serialized =
+        bincode::serialize(&payload).map_err(|e| VaultError::SaveFailed(e.to_string()))?;
+    let compressed = vault_compression::compress(&serialized)?;
 
     let nonce = crypto::generate_nonce();
-    let ciphertext = crypto::encrypt(&*vault.key, &nonce, &plaintext)?;
+    let ciphertext = crypto::encrypt(&*vault.key, &nonce, &compressed)?;
 
     let header = VaultHeader::new(vault.kdf_params, vault.salt, nonce);
     let file_data = format::encode_vault(&header, &ciphertext);
