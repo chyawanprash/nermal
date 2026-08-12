@@ -1,3 +1,2 @@
-# nermal
-nermalist chyawanprash
+### nermalist
 ![hero](assets/hero.png)
