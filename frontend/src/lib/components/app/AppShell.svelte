@@ -9,6 +9,7 @@
   import TopBar from './TopBar.svelte';
   import UnlockVault from '$lib/components/vault/UnlockVault.svelte';
   import Sidebar from '$lib/components/notes/Sidebar.svelte';
+  import NoteContextMenu from '$lib/components/notes/NoteContextMenu.svelte';
   import NoteEditor from '$lib/components/editor/NoteEditor.svelte';
   import CreateVaultDialog from '$lib/components/vault/CreateVaultDialog.svelte';
   import ChangePasswordDialog from '$lib/components/vault/ChangePasswordDialog.svelte';
@@ -37,6 +38,15 @@
     }
   }
 
+  /** Suppresses the WebView's native "Reload / Inspect Element" menu, but leaves
+   * it available on editable elements so Cut/Copy/Paste still work. */
+  function oncontextmenu(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('input, textarea, [contenteditable="true"]')) {
+      e.preventDefault();
+    }
+  }
+
   function onkeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       uiState.closeAllOverlays();
@@ -55,7 +65,7 @@
   }
 </script>
 
-<svelte:window onkeydown={onkeydown} />
+<svelte:window {onkeydown} {oncontextmenu} />
 
 <div class="h-screen w-screen overflow-hidden" style="background: var(--surface-app)">
   {#if appState.isInitializing}
@@ -81,6 +91,7 @@
   {/if}
 </div>
 
+<NoteContextMenu />
 <CreateVaultDialog />
 <ChangePasswordDialog />
 <SearchDialog />

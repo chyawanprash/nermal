@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Modal } from 'flowbite-svelte';
-  import { SearchOutline } from 'flowbite-svelte-icons';
+  import { SearchOutline, CloseOutline } from 'flowbite-svelte-icons';
   import { uiState } from '$lib/stores/ui.svelte';
   import { notesState } from '$lib/stores/notes.svelte';
   import { searchNotes, highlightSegments } from '$lib/utils/search';
@@ -24,19 +24,29 @@
   bind:open={() => uiState.searchOpen, (v) => (v ? (uiState.searchOpen = true) : close())}
   size="md"
   class="p-0"
+  classes={{ close: 'hidden' }}
   dismissable
   outsideclose
 >
-  <div class="flex items-center gap-2 border-b px-4 py-3" style="border-color: var(--border-subtle)">
+  <div class="flex items-center gap-2.5 border-b px-4 py-4" style="border-color: var(--border-subtle)">
     <SearchOutline class="h-4 w-4 shrink-0" style="color: var(--text-tertiary)" />
     <!-- svelte-ignore a11y_autofocus -->
     <input
-      class="w-full bg-transparent text-sm outline-none"
-      style="color: var(--text-primary)"
+      class="w-full bg-transparent text-base outline-none"
+      style="color: var(--text-primary); outline: none"
       placeholder="Search notes…"
       bind:value={query}
       autofocus
     />
+    <button
+      type="button"
+      class="shrink-0 rounded-md p-1 transition-colors hover:bg-[var(--surface-hover)]"
+      style="color: var(--text-tertiary)"
+      aria-label="Close search"
+      onclick={close}
+    >
+      <CloseOutline class="h-4 w-4" />
+    </button>
   </div>
 
   <div class="max-h-80 overflow-y-auto p-2">

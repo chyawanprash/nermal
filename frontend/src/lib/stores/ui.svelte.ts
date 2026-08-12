@@ -21,6 +21,12 @@ const DEFAULT_EDITOR_PREFERENCES: EditorPreferences = {
  * sensitive, so (unlike vault/notes state) it's fine for `theme` to persist
  * across launches via localStorage.
  */
+export interface NoteContextMenuState {
+  noteId: string;
+  x: number;
+  y: number;
+}
+
 class UiState {
   sidebarOpen = $state(true);
   searchOpen = $state(false);
@@ -28,9 +34,24 @@ class UiState {
   activeDialog = $state<DialogName>(null);
   theme = $state<Theme>(readStoredTheme());
   editorPreferences = $state<EditorPreferences>(readStoredEditorPreferences());
+  noteContextMenu = $state<NoteContextMenuState | null>(null);
+  /** Masks note titles/content on screen for screen-sharing/streaming. Resets on relaunch. */
+  streamerMode = $state(false);
 
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  openNoteContextMenu(noteId: string, x: number, y: number) {
+    this.noteContextMenu = { noteId, x, y };
+  }
+
+  closeNoteContextMenu() {
+    this.noteContextMenu = null;
+  }
+
+  toggleStreamerMode() {
+    this.streamerMode = !this.streamerMode;
   }
 
   openDialog(name: DialogName) {

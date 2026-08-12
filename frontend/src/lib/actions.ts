@@ -10,6 +10,7 @@ import { appState } from '$lib/stores/app.svelte';
 import { vaultState } from '$lib/stores/vault.svelte';
 import { notesState } from '$lib/stores/notes.svelte';
 import { uiState } from '$lib/stores/ui.svelte';
+import { recentVaultsState } from '$lib/stores/recentVaults.svelte';
 import type { AppError } from '$lib/types/app';
 import type { CreateVaultInput, UnlockVaultInput, ChangePasswordInput } from '$lib/types/vault';
 import { logAppError } from '$lib/tauri/errors';
@@ -26,6 +27,7 @@ export const actions = {
     try {
       const info = await vault.create(input);
       vaultState.setUnlocked(info);
+      recentVaultsState.touch(info);
       await this.loadNotes();
       appState.goTo('vault-unlocked');
       return true;
@@ -40,13 +42,20 @@ export const actions = {
   async openVaultFlow(): Promise<void> {
     const path = await vault.pickVaultFile();
     if (!path) return;
+    await this.openVaultByPath(path);
+  },
 
+  /** Reopens a vault whose path is already known, e.g. from the recent-vaults list. */
+  async openVaultByPath(path: string): Promise<void> {
     appState.startLoading('Opening vault…');
     try {
       const summary = await vault.open(path);
       vaultState.selectLocked(summary);
+      recentVaultsState.touch(summary);
       appState.goTo('vault-locked');
     } catch (err) {
+      const appError = err as AppError;
+      if (appError.code === 'VAULT_NOT_FOUND') recentVaultsState.remove(path);
       handle('openVault', err);
     } finally {
       appState.stopLoading();
@@ -59,6 +68,7 @@ export const actions = {
     try {
       const info = await vault.unlock(input);
       vaultState.setUnlocked(info);
+      recentVaultsState.touch(info);
       await this.loadNotes();
       appState.goTo('vault-unlocked');
       return true;

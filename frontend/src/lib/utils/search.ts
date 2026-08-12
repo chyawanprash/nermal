@@ -1,4 +1,5 @@
 import type { Note } from '$lib/types/note';
+import { stripHtml } from '$lib/utils/html';
 
 export interface SearchResult {
   note: Note;
@@ -17,7 +18,8 @@ export function searchNotes(notes: Note[], query: string): SearchResult[] {
   const results: SearchResult[] = [];
   for (const note of notes) {
     const title = note.title.toLowerCase();
-    const content = note.content.toLowerCase();
+    const plainContent = stripHtml(note.content);
+    const content = plainContent.toLowerCase();
     const titleMatch = title.includes(term);
     const contentIndex = content.indexOf(term);
 
@@ -26,7 +28,7 @@ export function searchNotes(notes: Note[], query: string): SearchResult[] {
     results.push({
       note,
       titleMatch,
-      snippet: contentIndex === -1 ? note.content.slice(0, 120) : snippetAround(note.content, contentIndex, term.length),
+      snippet: contentIndex === -1 ? plainContent.slice(0, 120) : snippetAround(plainContent, contentIndex, term.length),
     });
   }
 

@@ -67,14 +67,15 @@
   bind:open={() => uiState.commandPaletteOpen, (v) => (v ? (uiState.commandPaletteOpen = true) : close())}
   size="md"
   class="p-0"
+  classes={{ close: 'hidden' }}
   dismissable
   outsideclose
 >
-  <div class="border-b px-4 py-3" style="border-color: var(--border-subtle)">
+  <div class="border-b px-4 py-4" style="border-color: var(--border-subtle)">
     <!-- svelte-ignore a11y_autofocus -->
     <input
-      class="w-full bg-transparent text-sm outline-none"
-      style="color: var(--text-primary)"
+      class="w-full bg-transparent text-base outline-none"
+      style="color: var(--text-primary); outline: none"
       placeholder="Search commands…"
       bind:value={query}
       onkeydown={onkeydown}

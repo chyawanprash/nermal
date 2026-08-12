@@ -1,8 +1,12 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { Button } from 'flowbite-svelte';
   import { notesState } from '$lib/stores/notes.svelte';
   import { uiState } from '$lib/stores/ui.svelte';
   import { actions } from '$lib/actions';
+  import { cycleBoldWeight, toggleUnderline, toggleStrikethrough } from '$lib/utils/richtext';
+  import { stripHtml } from '$lib/utils/html';
+  import { scramble } from '$lib/utils/streamer';
   import EditorHeader from './EditorHeader.svelte';
   import EmptyState from '$lib/components/common/EmptyState.svelte';
   import DeleteNoteDialog from '$lib/components/notes/DeleteNoteDialog.svelte';
@@ -12,7 +16,10 @@
   let title = $state('');
   let content = $state('');
   let currentId = $state<string | null>(null);
+  let editorEl: HTMLDivElement | undefined = $state();
   let debounceHandle: ReturnType<typeof setTimeout> | undefined;
+
+  let isEmpty = $derived(stripHtml(content).length === 0);
 
   async function flush() {
     if (debounceHandle) clearTimeout(debounceHandle);
@@ -30,6 +37,44 @@
     debounceHandle = setTimeout(flush, DEBOUNCE_MS);
   }
 
+  function oninput() {
+    if (uiState.streamerMode) return;
+    content = editorEl?.innerHTML ?? '';
+    scheduleSave();
+  }
+
+  function onkeydown(e: KeyboardEvent) {
+    if (uiState.streamerMode || !editorEl) return;
+    const mod = e.metaKey || e.ctrlKey;
+    const key = e.key.toLowerCase();
+
+    let applied = false;
+    if (mod && !e.shiftKey && key === 'b') {
+      e.preventDefault();
+      applied = cycleBoldWeight(editorEl);
+    } else if (mod && !e.shiftKey && key === 'u') {
+      e.preventDefault();
+      applied = toggleUnderline(editorEl);
+    } else if (mod && e.shiftKey && key === 'x') {
+      e.preventDefault();
+      applied = toggleStrikethrough(editorEl);
+    } else {
+      return;
+    }
+
+    if (applied) {
+      content = editorEl.innerHTML;
+      scheduleSave();
+    }
+  }
+
+  function scrambledHtml(html: string): string {
+    return stripHtml(html)
+      .split('\n')
+      .map((line) => scramble(line))
+      .join('<br>');
+  }
+
   $effect(() => {
     const note = notesState.activeNote;
     if (note && note.id !== currentId) {
@@ -37,31 +82,75 @@
       currentId = note.id;
       title = note.title;
       content = note.content;
+      if (editorEl) editorEl.innerHTML = uiState.streamerMode ? scrambledHtml(content) : content;
     } else if (!note && currentId !== null) {
       currentId = null;
       title = '';
       content = '';
+      if (editorEl) editorEl.innerHTML = '';
     }
+  });
+
+  // Swaps the visible note between real and scrambled text, without ever
+  // touching `content` (the actual saved value) — only reacts to the mode
+  // toggle itself, not to every keystroke, hence the untrack() around content.
+  $effect(() => {
+    const streaming = uiState.streamerMode;
+    if (!editorEl) return;
+    untrack(() => {
+      if (!editorEl) return;
+      if (streaming) {
+        editorEl.innerHTML = scrambledHtml(content);
+        editorEl.contentEditable = 'false';
+      } else {
+        editorEl.innerHTML = content;
+        editorEl.contentEditable = 'true';
+      }
+    });
   });
 </script>
 
 {#if notesState.activeNote}
   <div class="flex h-full flex-col">
     <EditorHeader bind:title updatedAt={notesState.activeNote.updatedAt} oninput={scheduleSave} />
-    <textarea
-      class="min-h-0 flex-1 resize-none bg-transparent px-8 pb-8 outline-none"
-      style="
-        color: var(--text-primary);
-        font-family: var(--font-serif);
-        font-size: {uiState.editorPreferences.fontSize}px;
-        line-height: {uiState.editorPreferences.lineHeight};
-        white-space: {uiState.editorPreferences.wordWrap ? 'pre-wrap' : 'pre'};
-        overflow-x: {uiState.editorPreferences.wordWrap ? 'hidden' : 'auto'};
-      "
-      placeholder="Start writing…"
-      bind:value={content}
-      oninput={scheduleSave}
-    ></textarea>
+    <div class="relative min-h-0 flex-1">
+      {#if isEmpty}
+        <p
+          class="pointer-events-none absolute top-0 px-8 select-none"
+          style="
+            color: var(--text-tertiary);
+            font-family: var(--font-serif);
+            font-size: {uiState.editorPreferences.fontSize}px;
+            line-height: {uiState.editorPreferences.lineHeight};
+          "
+        >
+          Start writing… (select text and press ⌘B to cycle bold weight)
+        </p>
+      {/if}
+      <div
+        bind:this={editorEl}
+        contenteditable="true"
+        role="textbox"
+        tabindex="0"
+        aria-multiline="true"
+        aria-label="Note content"
+        class="h-full min-h-0 appearance-none overflow-y-auto bg-transparent px-8 pb-8 outline-none"
+        style="
+          -webkit-appearance: none;
+          border: none;
+          box-shadow: none;
+          outline: none;
+          color: var(--text-primary);
+          font-family: var(--font-serif);
+          font-size: {uiState.editorPreferences.fontSize}px;
+          line-height: {uiState.editorPreferences.lineHeight};
+          white-space: {uiState.editorPreferences.wordWrap ? 'pre-wrap' : 'pre'};
+          overflow-x: {uiState.editorPreferences.wordWrap ? 'hidden' : 'auto'};
+        "
+        {oninput}
+        {onkeydown}
+      ></div>
+    </div>
   </div>
   <DeleteNoteDialog />
 {:else}
