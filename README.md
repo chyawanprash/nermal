@@ -15,11 +15,4 @@ https://github.com/user-attachments/assets/5d188e8c-948d-4bca-9cce-f2062c18ee06
 
 
 ---
-## contributors
 
-<a href="https://github.com/chyawanprash/nermalist/graphs/contributors">
-  <img src="https://readme-contribs.as93.net/contributors/chyawanprash/nermalist" />
-</a>
-<br>
-
----
