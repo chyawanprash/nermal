@@ -74,6 +74,10 @@ jobs:
   android:
     runs-on: ubuntu-22.04
     needs: release
+    env:
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
 
     steps:
       - uses: actions/checkout@v4
@@ -120,16 +124,19 @@ jobs:
         working-directory: src-tauri
         run: cargo tauri android init --ci
 
-      # Attach ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD and ANDROID_KEY_BASE64
-      # (base64 of a release keystore.jks) as repo secrets to produce a signed
-      # APK. Without them the build falls back to an unsigned APK.
+      # Add ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD and ANDROID_KEY_BASE64
+      # (base64 of a release keystore.jks) as repo secrets to produce a
+      # consistently-signed release APK across versions. Without them this
+      # step is skipped and the build falls back to Tauri's default debug
+      # signing, which is fine for sideloading but means each CI run signs
+      # with a fresh key, so users may need to uninstall before upgrading.
       - name: Set up Android signing
-        if: ${{ secrets.ANDROID_KEY_BASE64 != '' }}
+        if: ${{ env.ANDROID_KEY_BASE64 != '' }}
         working-directory: src-tauri/gen/android
         run: |
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > keystore.properties
-          echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> keystore.properties
-          base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > "$RUNNER_TEMP/keystore.jks"
+          echo "keyAlias=$ANDROID_KEY_ALIAS" > keystore.properties
+          echo "password=$ANDROID_KEY_PASSWORD" >> keystore.properties
+          base64 -d <<< "$ANDROID_KEY_BASE64" > "$RUNNER_TEMP/keystore.jks"
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
 
       - name: Build APK
