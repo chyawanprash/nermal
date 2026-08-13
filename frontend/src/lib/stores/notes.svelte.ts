@@ -13,6 +13,8 @@ class NotesState {
   saveStatus = $state<SaveStatus>('idle');
   lastSavedAt = $state<string | null>(null);
   dirty = $state(false);
+  selectionMode = $state(false);
+  selectedIds = $state<Set<string>>(new Set());
 
   activeNote = $derived(this.notes.find((n) => n.id === this.activeNoteId) ?? null);
 
@@ -21,6 +23,8 @@ class NotesState {
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     ),
   );
+
+  allSelected = $derived(this.notes.length > 0 && this.selectedIds.size === this.notes.length);
 
   setAll(notes: Note[]) {
     this.notes = notes;
@@ -40,10 +44,48 @@ class NotesState {
     if (this.activeNoteId === id) {
       this.activeNoteId = null;
     }
+    this.selectedIds.delete(id);
+  }
+
+  removeMany(ids: string[]) {
+    const idSet = new Set(ids);
+    this.notes = this.notes.filter((n) => !idSet.has(n.id));
+    if (this.activeNoteId && idSet.has(this.activeNoteId)) {
+      this.activeNoteId = null;
+    }
+    this.selectedIds = new Set([...this.selectedIds].filter((id) => !idSet.has(id)));
   }
 
   select(id: string | null) {
     this.activeNoteId = id;
+  }
+
+  enterSelectionMode(initialId?: string) {
+    this.selectionMode = true;
+    if (initialId) this.selectedIds = new Set([initialId]);
+  }
+
+  exitSelectionMode() {
+    this.selectionMode = false;
+    this.selectedIds = new Set();
+  }
+
+  toggleSelected(id: string) {
+    const next = new Set(this.selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this.selectedIds = next;
+  }
+
+  selectAll() {
+    this.selectedIds = new Set(this.notes.map((n) => n.id));
+  }
+
+  clearSelected() {
+    this.selectedIds = new Set();
   }
 
   markDirty() {
@@ -71,6 +113,8 @@ class NotesState {
     this.saveStatus = 'idle';
     this.lastSavedAt = null;
     this.dirty = false;
+    this.selectionMode = false;
+    this.selectedIds = new Set();
   }
 }
 

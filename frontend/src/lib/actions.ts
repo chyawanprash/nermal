@@ -178,6 +178,23 @@ export const actions = {
     }
   },
 
+  /** Best-effort bulk delete: removes every note that succeeds, surfaces one error if any fail. */
+  async deleteNotes(ids: string[]): Promise<void> {
+    const deleted: string[] = [];
+    let lastErr: unknown = null;
+    for (const id of ids) {
+      try {
+        await notes.delete(id);
+        deleted.push(id);
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    if (deleted.length > 0) notesState.removeMany(deleted);
+    notesState.exitSelectionMode();
+    if (lastErr) handle('deleteNotes', lastErr);
+  },
+
   /** Placeholder the editor overrides via `registerFlush`; ensures Cmd+S / lock / close never drop input. */
   flushPendingSave: (() => Promise.resolve()) as () => Promise<void>,
 

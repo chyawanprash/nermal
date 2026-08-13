@@ -4,6 +4,7 @@ export type DialogName =
   | 'create-vault'
   | 'change-password'
   | 'delete-note'
+  | 'delete-notes-bulk'
   | 'settings'
   | null;
 

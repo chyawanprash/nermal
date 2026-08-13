@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState } from '$lib/stores/app.svelte';
   import { uiState } from '$lib/stores/ui.svelte';
+  import { notesState } from '$lib/stores/notes.svelte';
   import { actions } from '$lib/actions';
   import { SHORTCUTS } from '$lib/config/shortcuts';
   import { matchesShortcut, isTypingTarget } from '$lib/utils/keyboard';
@@ -12,6 +13,7 @@
   import UnlockVault from '$lib/components/vault/UnlockVault.svelte';
   import Sidebar from '$lib/components/notes/Sidebar.svelte';
   import NoteContextMenu from '$lib/components/notes/NoteContextMenu.svelte';
+  import DeleteNotesBulkDialog from '$lib/components/notes/DeleteNotesBulkDialog.svelte';
   import NoteEditor from '$lib/components/editor/NoteEditor.svelte';
   import CreateVaultDialog from '$lib/components/vault/CreateVaultDialog.svelte';
   import ChangePasswordDialog from '$lib/components/vault/ChangePasswordDialog.svelte';
@@ -51,6 +53,10 @@
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
+      if (uiState.activeDialog === null && notesState.selectionMode) {
+        notesState.exitSelectionMode();
+        return;
+      }
       uiState.closeAllOverlays();
       return;
     }
@@ -100,6 +106,7 @@
 </div>
 
 <NoteContextMenu />
+<DeleteNotesBulkDialog />
 <CreateVaultDialog />
 <ChangePasswordDialog />
 <SearchDialog />
