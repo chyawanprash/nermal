@@ -3,10 +3,20 @@
   import { uiState } from '$lib/stores/ui.svelte';
   import { appState } from '$lib/stores/app.svelte';
   import { vaultState } from '$lib/stores/vault.svelte';
+  import { updateState } from '$lib/stores/update.svelte';
   import { actions } from '$lib/actions';
   import type { Theme } from '$lib/types/app';
   import { SHORTCUTS } from '$lib/config/shortcuts';
   import { formatShortcut } from '$lib/utils/keyboard';
+  import { openUrl } from '@tauri-apps/plugin-opener';
+
+  const UPDATE_STATUS_LABEL: Record<string, string> = {
+    idle: '',
+    checking: 'Checking…',
+    'up-to-date': "You're up to date.",
+    available: 'A new version is available.',
+    error: "Couldn't check for updates.",
+  };
 
   const THEMES: { value: Theme; label: string }[] = [
     { value: 'system', label: 'System' },
@@ -175,13 +185,37 @@
       </div>
     </section>
 
-    <section class="space-y-1.5 border-t pt-4" style="border-color: var(--border-subtle)">
+    <section class="space-y-2.5 border-t pt-4" style="border-color: var(--border-subtle)">
       <h3 class="text-[11px] font-semibold tracking-wide uppercase" style="color: var(--text-tertiary)">
         About
       </h3>
       <p class="text-xs leading-relaxed" style="color: var(--text-tertiary)">
         nermal — a local-first, encrypted notes vault. Your notes never leave this device.
       </p>
+      <div class="flex items-center justify-between gap-3 text-sm">
+        <div class="min-w-0">
+          <span style="color: var(--text-primary)"
+            >Version {updateState.currentVersion ?? '…'}</span
+          >
+          {#if UPDATE_STATUS_LABEL[updateState.status]}
+            <Helper class="text-xs">{UPDATE_STATUS_LABEL[updateState.status]}</Helper>
+          {/if}
+        </div>
+        {#if updateState.status === 'available' && updateState.releaseUrl}
+          <Button size="xs" onclick={() => openUrl(updateState.releaseUrl!)}>
+            Download
+          </Button>
+        {:else}
+          <Button
+            size="xs"
+            color="alternative"
+            disabled={updateState.status === 'checking'}
+            onclick={() => updateState.check()}
+          >
+            Check for updates
+          </Button>
+        {/if}
+      </div>
     </section>
   </div>
 </Modal>

@@ -23,6 +23,7 @@
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-dialog": "^2.7.2",
+    "@tauri-apps/plugin-opener": "^2.5.4",
     "flowbite-svelte": "^1.33.1",
     "flowbite-svelte-icons": "^3.1.0"
   }

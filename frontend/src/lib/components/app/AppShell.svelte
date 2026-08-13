@@ -4,9 +4,11 @@
   import { actions } from '$lib/actions';
   import { SHORTCUTS } from '$lib/config/shortcuts';
   import { matchesShortcut, isTypingTarget } from '$lib/utils/keyboard';
+  import { updateState } from '$lib/stores/update.svelte';
 
   import WelcomeScreen from './WelcomeScreen.svelte';
   import TopBar from './TopBar.svelte';
+  import UpdateBanner from './UpdateBanner.svelte';
   import UnlockVault from '$lib/components/vault/UnlockVault.svelte';
   import Sidebar from '$lib/components/notes/Sidebar.svelte';
   import NoteContextMenu from '$lib/components/notes/NoteContextMenu.svelte';
@@ -63,6 +65,11 @@
       }
     }
   }
+
+  $effect(() => {
+    updateState.loadCurrentVersion();
+    updateState.checkIfDue();
+  });
 </script>
 
 <svelte:window {onkeydown} {oncontextmenu} />
@@ -79,6 +86,7 @@
   {:else}
     <div class="flex h-full flex-col">
       <TopBar />
+      <UpdateBanner />
       <div class="flex min-h-0 flex-1">
         {#if uiState.sidebarOpen}
           <Sidebar />

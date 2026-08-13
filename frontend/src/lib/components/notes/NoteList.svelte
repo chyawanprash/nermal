@@ -16,7 +16,7 @@
     {/snippet}
   </EmptyState>
 {:else}
-  <div class="flex flex-col gap-4 overflow-y-auto px-2 py-2">
+  <div class="flex h-full flex-col gap-4 overflow-y-auto px-2 py-2">
     {#each groups as [label, items] (label)}
       <div>
         <p
